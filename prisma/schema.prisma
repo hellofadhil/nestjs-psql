@@ -8,24 +8,46 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Categories {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String   
-  email     String   @unique
-  password  String
+  name      String   @db.VarChar(100)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
-
-  // Relasi ke Profile
-  profile   Profile?
 }
 
-model Profile {
+model Authors {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String   @unique @db.Uuid // Foreign key yang merujuk ke User
-  bio       String?
-  avatarUrl String?
+  name      String   @db.VarChar(100)
+  bio       Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
 
-  // Relasi ke User
-  user      User     @relation(fields: [userId], references: [id])
+model Books {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String   @db.VarChar(150)
+  desc           TEXT
+  price          NUMERIC(10, 2)
+  stock          Int 
+  published_date Date
+  category       Categories
+  author         Authors
+  cover_image    String
+  isbn           String @db.VarChar(75)
+  page           Int
+  publisher      String
+  language       String @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Reviews {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String   @db.VarChar(150)
+  book          Books
+  rating        Int      @db.SmallInt
+  comment       Text
+  review_date   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
