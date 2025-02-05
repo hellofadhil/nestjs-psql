@@ -8,9 +8,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  // Relasi ke Profile
+  profile   Profile?
+}
+
+model Profile {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @unique @db.Uuid // Foreign key yang merujuk ke User
+  bio       String?
+  avatarUrl String?
+
+  // Relasi ke User
+  user      User     @relation(fields: [userId], references: [id])
+}
+
 model Categories {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String   @db.VarChar(100)
+  books     Books[]  @relation("BooksToCategories")
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -18,36 +41,41 @@ model Categories {
 model Authors {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String   @db.VarChar(100)
-  bio       Text
+  bio       String   @db.Text
+  books     Books[]  @relation("BooksToAuthors")
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Books {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name           String   @db.VarChar(150)
-  desc           TEXT
-  price          NUMERIC(10, 2)
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String     @db.VarChar(150)
+  desc           String     @db.Text
+  price          Decimal  
   stock          Int 
-  published_date Date
-  category       Categories
-  author         Authors
+  published_date DateTime   @db.Date
+  category       Categories @relation("BooksToCategories", fields: [categoryId], references: [id])
+  categoryId     String     @db.Uuid
+  author         Authors    @relation("BooksToAuthors", fields: [authorId], references: [id])
+  authorId       String     @db.Uuid
   cover_image    String
-  isbn           String @db.VarChar(75)
+  isbn           String     @db.VarChar(75)
   page           Int
   publisher      String
-  language       String @db.VarChar(50)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  language       String     @db.VarChar(50)
+  reviews        Reviews[]  @relation("BooksToReviews")
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @default(now()) @updatedAt
 }
 
 model Reviews {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name          String   @db.VarChar(150)
-  book          Books
+  book          Books    @relation("BooksToReviews", fields: [bookId], references: [id])
+  bookId        String   @db.Uuid
   rating        Int      @db.SmallInt
-  comment       Text
+  comment       String   @db.Text
   review_date   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 }
